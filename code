@@ -1,0 +1,278 @@
+#html code
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat App</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="room-selector">
+    <input type="text" id="room-code-input" placeholder="Enter room code">
+    <button class="button" id="room-join">Join Room</button>
+  </div>
+  <div class="person-selector" style="display: none;">
+    <input type="text" id="username-input" placeholder="Enter your name">
+    <button class="button" id="username-submit">Submit</button>
+  </div>
+  <div class="chat-container" style="display: none;">
+    <h2 class="chat-header"></h2>
+    <div class="chat-messages"></div>
+    <form class="chat-input-form">
+      <input type="text" class="chat-input" required placeholder="Type here..." />
+      <button type="submit" class="button send-button">Send</button>
+    </form>
+    <button class="button clear-chat-button">Clear Chat</button>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
+
+#css code 
+body {
+  background-image: linear-gradient(
+    23deg,
+    hsl(49deg 100% 69%) 0%,
+    hsl(16deg 80% 61%) 2%,
+    hsl(330deg 81% 34%) 12%,
+    hsl(259deg 100% 15%) 50%,
+    hsl(212deg 100% 25%) 88%,
+    hsl(197deg 100% 30%) 98%,
+    hsl(183deg 79% 36%) 100%
+  );
+  height: 100vh;
+}
+.button 
+{
+  border: none;
+  padding: 0.625em;
+  border-radius: 0.5em;
+  cursor: pointer;
+}
+.button:hover 
+{
+  filter: brightness(0.9);
+}
+.button:active {
+  transform: translateY(2px);
+}
+.person-selector {
+  display: flex;
+  justify-content: center;
+  gap: 1em;
+  margin: 3em auto 1em;
+  max-width: 40em;
+}
+.person-selector-button {
+  width: 100%;
+  background-color: #15202b;
+  color: #fff;
+  font-size: 1.1em;
+}
+.active-person
+{
+  background: #08529d;
+  box-shadow: 0 0 0.5em 0.1em #c3c3c333;
+}
+.chat-container
+{
+  background: #15202b;
+  font-family: 'Roboto', sans-serif;
+  border-radius: 0.5em;
+  padding: 0.5em 1.25em;
+  margin: auto;
+  max-width: 37.5em;
+  height: 37.5em;
+  box-shadow: 0 0 1.25em 0.5em #c3c3c333;
+}
+.chat-header 
+{
+  margin-bottom: 1em;
+  color: #fff;
+}
+.chat-header h2 {
+  font-size: 1.25em;
+  font-weight: bold;
+}
+.chat-messages 
+{
+  height: 23em;
+  overflow-y: scroll;
+}
+.chat-messages::-webkit-scrollbar 
+{
+  display: none;
+}
+.message
+{
+  padding: 0.625em;
+  border-radius: 1em;
+  margin-bottom: 0.625em;
+  display: flex;
+  flex-direction: column;
+  color: #fff;
+}
+.message-sender
+{
+  font-weight: bold;
+  margin-bottom: 0.31em;
+}
+.message-text
+{
+  font-size: 1em;
+  margin-bottom: 0.31em;
+  word-wrap: break-word;
+}
+.message-timestamp
+{
+  font-size: 0.75em;
+  text-align: right;
+}
+.blue-bg {
+  background-color: #1c9bef;
+}
+
+.gray-bg {
+  background-color: #3d5365;
+}
+
+.chat-input-form {
+  display: flex;
+  align-items: center;
+  margin-top: 2em;
+  gap: 0.625em;
+}
+.chat-input 
+{
+  padding: 0.625em;
+  border: none;
+  border-radius: 0.5em;
+  background-color: #f5f5f5;
+  color: #333;
+  font-size: 1em;
+  flex-grow: 1;
+}
+
+.send-button {
+  background-color: #1c9bef;
+  color: #fff;
+  font-size: 1em;
+  font-weight: bold;
+}
+.clear-chat-button {
+  display: block;
+  margin: 2.5em auto;
+}
+
+#javascript code 
+const roomCodeInput = document.getElementById('room-code-input');
+const roomJoinBtn = document.getElementById('room-join');
+const usernameInput = document.getElementById('username-input');
+const usernameSubmitBtn = document.getElementById('username-submit');
+const chatHeader = document.querySelector('.chat-header');
+const chatMessages = document.querySelector('.chat-messages');
+const chatInputForm = document.querySelector('.chat-input-form');
+const chatInput = document.querySelector('.chat-input');
+const clearChatBtn = document.querySelector('.clear-chat-button');
+
+let roomCode = null;
+let currentUser = null;
+
+const users = {};
+
+const messages = JSON.parse(localStorage.getItem('messages')) || [];
+
+const createChatMessageElement = (message) => `
+  <div class="message ${message.color}">
+    <div class="message-sender">${message.sender}</div>
+    <div class="message-text">${message.text}</div>
+    <div class="message-timestamp">${message.timestamp}</div>
+  </div>
+`;
+
+window.onload = () => {
+  messages.forEach((message) => {
+    chatMessages.innerHTML += createChatMessageElement(message);
+  });
+};
+
+roomJoinBtn.onclick = () => {
+  const code = roomCodeInput.value.trim();
+  if (code) {
+    roomCode = code;
+    roomCodeInput.style.display = 'none';
+    roomJoinBtn.style.display = 'none';
+    document.querySelector('.person-selector').style.display = 'block';
+  }
+};
+
+const updateMessageSender = (user) => {
+  currentUser = user;
+  chatHeader.innerText = ${currentUser.name} chatting...;
+  chatInput.placeholder = Type here, ${currentUser.name}...;
+  document.querySelector('.chat-container').style.display = 'block';
+};
+
+usernameSubmitBtn.onclick = () => {
+  const username = usernameInput.value.trim();
+  if (username) {
+    if (!users[username]) {
+      users[username] = {
+        name: username,
+        color: getRandomColor()
+      };
+    }
+    updateMessageSender(users[username]);
+    usernameInput.value = ''; // Clear input field
+    usernameInput.placeholder = "Enter your name"; // Reset placeholder
+  }
+};
+
+const getRandomColor = () => {
+  // Function to generate a random color
+  const letters = '0123456789ABCDEF';
+  let color = '#';
+  for (let i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+};
+
+const sendMessage = (e) => {
+  e.preventDefault();
+
+  if (!currentUser) {
+    // If user hasn't selected their name yet
+    alert('Please enter your name first!');
+    return;
+  }
+
+  const timestamp = new Date().toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
+  const message = {
+    sender: currentUser.name,
+    text: chatInput.value,
+    timestamp,
+    color: currentUser.color
+  };
+
+  /* Save message to local storage */
+  messages.push(message);
+  localStorage.setItem('messages', JSON.stringify(messages));
+
+  /* Add message to DOM */
+  chatMessages.innerHTML += createChatMessageElement(message);
+
+  /* Clear input field */
+  chatInputForm.reset();
+
+  /*  Scroll to bottom of chat messages */
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+};
+
+chatInputForm.addEventListener('submit', sendMessage);
+
+clearChatBtn.addEventListener('click', () => {
+  localStorage.clear();
+  chatMessages.innerHTML = '';
+});
